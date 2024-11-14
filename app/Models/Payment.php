@@ -7,14 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    /** @use HasFactory<\Database\Factories\PaymentFactory> */
     use HasFactory;
-    
+
     protected $fillable = [
-      'amount',
-      'payment_method',
-      'payment_status'
-      ];
+        'amount',
+        'payment_method',
+        'payment_status'
+        ];
+  
+      public function reservations()
+      {
+      return $this->hasMany(Reservation::class);
+      }
 }
-
-
