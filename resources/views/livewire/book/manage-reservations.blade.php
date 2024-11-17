@@ -15,7 +15,7 @@ new class extends Component {
     $this->services = Service::all();
     $this->reservations = Reservation::with(['vehicle', 'service', 'schedule'])
         ->where('user_id', auth()->id()) 
-        ->whereNotIn('status', ['cancelled', 'decline'])  
+        ->whereNotIn('status', ['cancelled', 'decline', 'completed'])  
         ->get();
 }
 
@@ -54,7 +54,7 @@ new class extends Component {
                     });
                 });
             })
-            ->whereNotIn('status', ['cancelled', 'decline'])
+            ->whereNotIn('status', ['cancelled', 'decline', 'completed'])
             ->get();
         
         Log::info('Reservations filtered: ' . count($this->reservations));

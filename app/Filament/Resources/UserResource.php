@@ -50,7 +50,15 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('is_active')->sortable(),
+                Tables\Columns\TextColumn::make('is_active')->sortable()->icon(function (bool $state): string
+                {
+                  return match ($state) {
+                    true => 'heroicon-s-check-circle',
+                    false => 'heroicon-s-x-circle'
+                    };
+                  })->color(function (bool $state): string {
+                    return $state ? 'success' : 'gray'; 
+                }),
                 Tables\Columns\ImageColumn::make('profile_picture')->circular(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),

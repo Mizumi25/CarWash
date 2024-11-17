@@ -42,7 +42,7 @@ new class extends Component
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
         $this->profile_picture = Auth::user()->profile_picture;
-        $this->phone_number = Auth::user()->phone_number;
+        $this->phone_number = Auth::user()->phone_number ?? '';
         $this->country_code = Auth::user()->country_code ?? $this->country_code; 
     
     }

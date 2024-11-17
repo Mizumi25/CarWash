@@ -15,6 +15,10 @@
                 <livewire:book.payment-reservations :reservationId="$reservation->id" />
             @elseif($reservation->status === 'ongoing')
                 <livewire:book.confirm-reservations :reservationId="$reservation->id" />
+            @elseif($reservation->status === 'in_progress')
+                <livewire:book.progress-reservations :reservationId="$reservation->id" />
+            @elseif($reservation->status === 'done')
+                <livewire:book.done-reservations :reservationId="$reservation->id" />
             @else
                 <p>No actions available for this reservation status.</p>
             @endif

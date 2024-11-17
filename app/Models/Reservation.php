@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Enums\ReservationStatus;
 
 class Reservation extends Model
 {
@@ -48,11 +49,15 @@ class Reservation extends Model
         return $this->belongsTo(Payment::class);
     }
     
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class); 
+    }
+    
     public function getVehicleTypeNameAttribute()
     {
         return $this->vehicle->vehicleType->name ?? 'N/A';
     }
-
 }
 
 

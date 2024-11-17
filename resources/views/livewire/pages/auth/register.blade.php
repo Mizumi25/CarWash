@@ -44,6 +44,8 @@ new #[Layout('layouts.guest')] class extends Component
 
 
         Auth::login($user);
+        
+        auth()->user()->update(['is_active' => true]);
 
         $this->redirect(route('dashboard', absolute: false), navigate: true);
     }

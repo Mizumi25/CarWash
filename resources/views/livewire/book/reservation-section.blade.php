@@ -33,6 +33,7 @@ new class extends Component
     public $selectedVehicleId = null;
     public $isVehicleInputEnabled = false;
     public $licensePlateError = '';
+    public $disabledSchedules;
     
     public function mount(): void 
     {
@@ -49,6 +50,9 @@ new class extends Component
             '02:00 pm', '03:00 pm', '04:00 pm',
             '05:00 pm'
         ];
+        
+        $this->disabledSchedules = collect(); 
+        $this->fetchDisabledSchedules();
     }
     
     public function updatedSelectedVehicleId($vehicleId)
@@ -61,8 +65,24 @@ new class extends Component
             $this->license_plate = $vehicle->license_plate;
             $this->color = $vehicle->color;
             $this->mileage = $vehicle->mileage;
-            $this->selectedVehicleTypeId = $vehicle->vehicle_type_id; // Automatically set vehicle type ID
+            $this->selectedVehicleTypeId = $vehicle->vehicle_type_id; 
             $this->isVehicleInputEnabled = true; 
+        }
+    }
+    
+    public function fetchDisabledSchedules()
+    {
+        $ongoingReservations = Reservation::whereIn('status', ['ongoing', 'in_progress'])->with('schedule')->get();
+        
+        $this->disabledSchedules = collect(); 
+    
+        foreach ($ongoingReservations as $reservation) {
+            $scheduleDate = Carbon::parse($reservation->schedule->date);
+            
+            $this->disabledSchedules->push([
+                'date' => $scheduleDate->toDateString(),
+                'time_slot' => Carbon::parse($reservation->schedule->time_slot)->format('h:i A'), 
+            ]);
         }
     }
     
@@ -414,22 +434,23 @@ new class extends Component
                                     
                                     <!-- Time slots for each day -->
                                     <div class="mt-2">
-                                      @foreach ($availableTimes as $time)
-                                          @if ($day->isSameDay(Carbon::now()->addDays(7)) || $day->greaterThan(Carbon::now()->addDays(7)))
-                                              <div class="w-full p-2 mb-1 text-center bg-gray-100 text-gray-400">
-                                                  No Service Available Yet
-                                              </div>
-                                          @else
-                                              <button type="button"
-                                                  class="w-full p-2 mb-1 rounded-lg 
-                                                         {{ $selectedDate == $day->toDateString() && $selectedTime == $time ? 'bg-blue-500 text-white' : ($selectedDate == $day->toDateString() ? 'bg-gray-200' : 'bg-gray-100 text-gray-400') }}"
-                                                  wire:click="selectTime('{{ $time }}')"
-                                                  {{ $selectedDate != $day->toDateString() ? 'disabled' : '' }}
-                                              >
-                                                  {{ $time }}
-                                              </button>
-                                          @endif
-                                      @endforeach
+                                       @foreach ($availableTimes as $time)
+                                        @php
+                                            $formattedDate = $day->toDateString();
+                                            $formattedTime = Carbon::parse($time)->format('h:i A'); 
+                                            $isDisabled = $this->disabledSchedules->contains(function ($schedule) use ($formattedDate, $formattedTime) {
+                                                return $schedule['date'] === $formattedDate && $schedule['time_slot'] === $formattedTime;
+                                            });
+                                        @endphp
+                                        <button type="button"
+                                            class="w-full p-2 mb-1 rounded-lg 
+                                                   {{ $selectedDate == $formattedDate && $selectedTime == $time ? 'bg-blue-500 text-white' : ($selectedDate == $formattedDate ? 'bg-gray-200' : 'bg-gray-100 text-gray-400') }}"
+                                            wire:click="selectTime('{{ $time }}')"
+                                            {{ $selectedDate != $formattedDate || $isDisabled ? 'disabled' : '' }}
+                                        >
+                                            {{ $time }}
+                                        </button>
+                                    @endforeach
                                   </div>
                 
                                 </div>
@@ -443,7 +464,7 @@ new class extends Component
                   <header>
                       <div class="flex flow-row gap-2 items-center">
                           <div class="bg-[#6c8ee5] h-[60px] w-[60px] rounded-full grid place-items-center">
-                              <span class="text-white">4/5</span>
+                              <span class="text-white">4/4</span>
                           </div>
                           <h2 class="text-lg font-medium text-gray-900">
                               {{ __('Reservation Details') }}

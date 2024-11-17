@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('schedule_id')->constrained()->onDelete('cascade');
             $table->foreignId('payment_id')->nullable()->constrained()->onDelete('cascade');
             $table->date('reservation_date'); 
-            $table->enum('status', ['decline', 'approve', 'pending', 'done', 'not_appeared', 'cancelled', 'ongoing']);
+            $table->enum('status', ['decline', 'approve', 'pending', 'done', 'not_appeared', 'cancelled', 'ongoing', 'in_progress', 'completed']);
             $table->string('decline_message')->nullable(); 
             $table->softDeletes();
             $table->timestamps();

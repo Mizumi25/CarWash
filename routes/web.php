@@ -63,6 +63,41 @@ Route::get('continue-reservations/{id}/{service_name}/{amount}/{payment_method}/
 })->middleware(['auth', 'verified'])->name('reservation.reserved');
 
 
+Route::get('continue-reservations/{id}/{service_name}/{amount}/{payment_method}/{payment_status}/partial', function ($id, $service_name, $amount, $payment_method, $payment_status) {
+    
+    $reservation = Reservation::findOrFail($id);  
+    
+    if ($reservation->user_id !== Auth::id()) {
+        abort(403, 'Unauthorized action.');
+    }
+    $payment = $reservation->payment;
+
+    if ($payment) {
+        $payment->amount = $amount;
+        $payment->payment_method = $payment_method;
+        $payment->payment_status = $payment_status;
+        $payment->save();
+    } else {
+        $payment = Payment::create([
+            'amount' => $amount,
+            'payment_method' => $payment_method,
+            'payment_status' => $payment_status,
+        ]);
+        $reservation->payment_id = $payment->id;
+    }
+    
+    $reservation->save();
+    
+    $service = $reservation->service; 
+    if ($service) {
+        $service->increment('popularity'); 
+    }
+
+    return view('reservations', compact('reservation', 'service_name', 'amount', 'payment_method', 'payment_status'));
+})->middleware(['auth', 'verified'])->name('reservation.partial');
+
+
+
 
 
 Route::get('payment/cancel/{reservationId}', function ($reservationId) {

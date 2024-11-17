@@ -60,19 +60,22 @@ class PendingReservationResource extends Resource
             Tables\Columns\TextColumn::make('reservation_date')->label('Reservation Date')->searchable(),
             Tables\Columns\TextColumn::make('status')->label('Status'),
         ])
-                    ->actions([
+                 ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('approve')
-                    ->label('Approve')
-                    ->action(function (Reservation $record) {
-                        $record->update(['status' => 'approve']);
-                        Notification::make()
-                            ->title('Success')
-                            ->body('Reservation approved successfully!')
-                            ->success() 
-                            ->send();
-                    })
-                    ->color('success'),
+                ->label('Approve')
+                ->action(function (Reservation $record) {
+                    $record->update(['status' => 'approve']);
+                    
+                    event(new \App\Events\ReservationStatusUpdated($record));
+                    
+                    Notification::make()
+                        ->title('Success')
+                        ->body('Reservation approved successfully!')
+                        ->success() 
+                        ->send();
+                })
+                ->color('success'),
                 Tables\Actions\Action::make('decline')
                     ->label('Decline')
                     ->modalHeading('Decline Reservation')

@@ -46,44 +46,44 @@ new class extends Component {
     }
 
     
-    public function initiateCheckout()
-    {
-        try {
-            // Create a new Stripe Checkout session
-            $stripe = new StripeClient(config('cashier.secret'));
-            
-            $paymentStatus = $this->paymentOption === 'half' ? 'partialy_paid' : 'fully_paid';
-            
-            $session = $stripe->checkout->sessions->create([
-                'payment_method_types' => ['card'],
-                'line_items' => [[
-                    'price_data' => [
-                        'currency' => 'usd',
-                        'product_data' => [
-                            'name' => $this->serviceName,
-                        ],
-                        'unit_amount' => (int)($this->amount * 100), // Amount in cents
-                    ],
-                    'quantity' => 1,
-                ]],
-                'mode' => 'payment',
-                'success_url' => route('reservation.reserved', [
-                    'id' => $this->reservationId,
-                    'service_name' => $this->serviceName,
-                    'amount' => $this->amount,
-                    'payment_method' => 'stripe',
-                    'payment_status' => $paymentStatus,
-                ]),
-                'cancel_url' => route('payment.cancel', [
-                    'reservationId' => $this->reservationId
-                ]),
-            ]);
-    
-            $this->paymentUrl = $session->url;
-            $this->redirect($this->paymentUrl);
-        } catch (\Exception $e) {
-            session()->flash('error', 'Failed to initiate payment: ' . $e->getMessage());
-        }
+      public function initiateCheckout()
+      {
+      try {
+  
+          $stripe = new StripeClient(config('cashier.secret'));
+          
+          $paymentStatus = (float)$this->paymentOption == 100 ? 'fully_paid' : 'partialy_paid';
+          
+          $session = $stripe->checkout->sessions->create([
+              'payment_method_types' => ['card'],
+              'line_items' => [[
+                  'price_data' => [
+                      'currency' => 'usd',
+                      'product_data' => [
+                          'name' => $this->serviceName,
+                      ],
+                      'unit_amount' => (int)($this->amount * 100), // Amount in cents
+                  ],
+                  'quantity' => 1,
+              ]],
+              'mode' => 'payment',
+              'success_url' => route('reservation.reserved', [
+                  'id' => $this->reservationId,
+                  'service_name' => $this->serviceName,
+                  'amount' => $this->amount,
+                  'payment_method' => 'stripe',
+                  'payment_status' => $paymentStatus,
+              ]),
+              'cancel_url' => route('payment.cancel', [
+                  'reservationId' => $this->reservationId
+              ]),
+          ]);
+  
+          $this->paymentUrl = $session->url;
+          $this->redirect($this->paymentUrl);
+      } catch (\Exception $e) {
+          session()->flash('error', 'Failed to initiate payment: ' . $e->getMessage());
+      }
     }
 };
 ?>
